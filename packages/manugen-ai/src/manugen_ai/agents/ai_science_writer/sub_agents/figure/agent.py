@@ -45,9 +45,11 @@ def process_figure_response(
     figure_desc_obj = SingleFigureDescription.model_validate_json(figure_desc)
 
     # compute figure number
-    current_figure_id = 1
-    if FIGURES_KEY in state:
-        current_figure_id = len(state[FIGURES_KEY]) + 1
+    figure_type = figure_desc_obj.figure_type or "main"
+    
+    bucket_key = SUPP_FIGURES_KEY if figure_type == "supplemental" else FIGURES_KEY
+    existing = state.get(bucket_key, {})
+    current_figure_id = len(existing) + 1
 
     figure_desc_obj.figure_number = current_figure_id
     modified_text = figure_desc_obj.model_dump_json()
@@ -78,16 +80,25 @@ def update_figure_state(
     current_figure = state[CURRENT_FIGURE_KEY]
     current_figure_obj = SingleFigureDescription.model_validate(current_figure)
 
-    if FIGURES_KEY not in state:
-        state[FIGURES_KEY] = {}
+    # Decide which dictionary (bucket) to store the figure in
+    bucket_key = (
+        SUPP_FIGURES_KEY
+        if current_figure_obj.figure_type == "supplemental"
+        else FIGURES_KEY
+    )
 
-    current_figure_state = state[FIGURES_KEY]
-    current_figure_state[current_figure_obj.figure_number] = {
-        k: v for k, v in current_figure_obj.model_dump().items() if k != "figure_number"
+    # Make sure the bucket exists
+    if bucket_key not in state:
+        state[bucket_key] = {}
+
+    # Write the figure data under its running number
+    bucket = state[bucket_key]
+    bucket[current_figure_obj.figure_number] = {
+        k: v
+        for k, v in current_figure_obj.model_dump().items()
+        if k != "figure_number"
     }
-
-    state[FIGURES_KEY] = current_figure_state
-
+    state[bucket_key] = bucket
     state[CURRENT_FIGURE_KEY] = ""
 
     return None
