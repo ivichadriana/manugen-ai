@@ -87,6 +87,11 @@ to check the logic of that paragraph. The result of each paragraph is a logical
 statement, and paragraphs farther down in the text rely on the logical
 conclusions of previous paragraphs, much as theorems are built in mathematical
 literature.
+
+* When referring to data presented only in supplementary figures, cite them with the format 
+“Figure S{number}” (e.g., Figure S1) unless the user specifies another style (for instance, 
+“Supplementary Figure {number}”), in which case follow the user’s wording exactly."
+
 ```
 
 # Output
