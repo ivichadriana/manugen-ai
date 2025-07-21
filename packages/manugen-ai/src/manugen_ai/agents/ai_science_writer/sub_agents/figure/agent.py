@@ -14,7 +14,6 @@ from manugen_ai.schema import (
     CURRENT_FIGURE_KEY,
     FIGURES_KEY,
     SUPP_FIGURES_KEY, 
-    SUPP_FIGURES_DESCRIPTIONS_KEY,
     SingleFigureDescription,
     prepare_instructions,
 )
