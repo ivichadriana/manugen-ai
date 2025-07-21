@@ -98,6 +98,14 @@ def update_figure_state(
         if k != "figure_number"
     }
     state[bucket_key] = bucket
+
+    if current_figure_obj.figure_type == "supplemental":
+        caption = (
+            f"**Figure S{current_figure_obj.figure_number}. "
+            f"{current_figure_obj.title}**\n"
+            f"{current_figure_obj.description}\n\n"
+        )
+        state["supplementary_figures"] = state.get("supplementary_figures", "") + caption
     state[CURRENT_FIGURE_KEY] = ""
 
     return None
