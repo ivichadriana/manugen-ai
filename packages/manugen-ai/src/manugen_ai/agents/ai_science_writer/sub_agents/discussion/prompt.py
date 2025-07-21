@@ -76,7 +76,7 @@ thus learns to put the paper’s conclusions into the right context.
 
 * When referring to data presented only in supplementary figures, cite them with the format 
 “Figure S{number}” (e.g., Figure S1) unless the user specifies another style (for instance, 
-“Supplementary Figure {number}”), in which case follow the user’s wording exactly."
+“Supplementary Figure {number}”), in which case follow the user’s wording exactly.
 ```
 
 # Output
