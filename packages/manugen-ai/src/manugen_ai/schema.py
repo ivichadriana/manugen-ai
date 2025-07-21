@@ -62,3 +62,5 @@ class SingleFigureDescription(BaseModel):
 CURRENT_FIGURE_KEY = "current_figure"
 FIGURES_KEY = "figures"
 FIGURES_DESCRIPTIONS_KEY = "figures_descriptions"
+SUPP_FIGURES_KEY = "supplemental_figures" 
+SUPP_FIGURES_DESCRIPTIONS_KEY = "supplemental_figures_descriptions"
