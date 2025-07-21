@@ -57,6 +57,7 @@ class SingleFigureDescription(BaseModel):
     figure_number: int = Field(default=0)
     title: str = Field(default="")
     description: str = Field(default="")
+    figure_type: str = "main"   # allowed: "main" or "supplemental"
 
 
 CURRENT_FIGURE_KEY = "current_figure"
