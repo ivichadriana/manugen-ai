@@ -5,6 +5,19 @@ It leverages the capabilities of large language models (LLMs) to automate the ge
 
 We intend to submit this project to the 2025 [Agent Development Kit Hackathon with Google Cloud](https://googlecloudmultiagents.devpost.com/).
 
+## Quick Start!
+
+1. **Clone & enter your fork**  
+   ```bash
+   git clone <your‑fork‑url> manugen-ai
+   cd manugen-ai
+2.  Copy and edit environment template
+    ```cp .env.TEMPLATE .env
+    Then add your keys were relevant (e.g., OpenAI, Google).
+3. Run in Docker
+    ```docker compose up --build frontend
+4. Open the UI in your browser (see terminal for link)
+
 ## Installation
 
 The project relies on [uv](https://docs.astral.sh/uv/) for dependency management.
