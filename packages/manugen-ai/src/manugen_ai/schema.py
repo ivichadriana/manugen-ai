@@ -24,26 +24,16 @@ def prepare_instructions(callback_context: CallbackContext) -> Optional[types.Co
         if key1 not in callback_context.state:
             callback_context.state[key1] = ""
 
-    # ----------------------------------------------------------------------
-    # add figures descriptions (main + supplemental)
-    figure_descriptions = ""
-
-    # --- main figures ---
+    # add figures descriptions
+    callback_context.state[FIGURES_DESCRIPTIONS_KEY] = ""
     if FIGURES_KEY in current_state:
+        figure_descriptions = ""
         for num, fig in current_state[FIGURES_KEY].items():
+            label = fig.get("display_name", f"Figure {num}")
             figure_descriptions += (
-                f"Figure {num}: {fig['title']}\n{fig['description']}\n\n"
+                f"{label}: {fig['title']}\n{fig['description']}\n\n"
             )
-
-    # --- supplemental figures ---
-    if SUPP_FIGURES_KEY in current_state:
-        for num, fig in current_state[SUPP_FIGURES_KEY].items():
-            figure_descriptions += (
-                f"Supplementary Figure S{num}: {fig['title']}\n{fig['description']}\n\n"
-            )
-
-    callback_context.state[FIGURES_DESCRIPTIONS_KEY] = figure_descriptions.strip()
-    # ----------------------------------------------------------------------
+        callback_context.state[FIGURES_DESCRIPTIONS_KEY] = figure_descriptions.strip()
 
 class ManuscriptStructure(BaseModel):
     title: str = Field(default="")
@@ -68,11 +58,8 @@ class SingleFigureDescription(BaseModel):
     figure_number: int = Field(default=0)
     title: str = Field(default="")
     description: str = Field(default="")
-    figure_type: str = "main"   # allowed: "main" or "supplemental"
 
 
 CURRENT_FIGURE_KEY = "current_figure"
 FIGURES_KEY = "figures"
 FIGURES_DESCRIPTIONS_KEY = "figures_descriptions"
-SUPP_FIGURES_KEY = "supplemental_figures" 
-SUPP_FIGURES_DESCRIPTIONS_KEY = "supplemental_figures_descriptions"

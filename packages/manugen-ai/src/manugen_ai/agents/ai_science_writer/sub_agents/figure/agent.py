@@ -13,7 +13,6 @@ from google.genai import types
 from manugen_ai.schema import (
     CURRENT_FIGURE_KEY,
     FIGURES_KEY,
-    SUPP_FIGURES_KEY, 
     SingleFigureDescription,
     prepare_instructions,
 )
@@ -39,16 +38,25 @@ def process_figure_response(
     # get current state
     state = callback_context.state
 
-    # get agent description about figure
-    figure_desc = llm_response.content.parts[0].text
-    figure_desc_obj = SingleFigureDescription.model_validate_json(figure_desc)
+    # parse the LLM’s JSON into our Pydantic model
+    raw = llm_response.content.parts[0].text
+    figure_desc_obj = SingleFigureDescription.model_validate_json(raw)
 
+    # locate the uploaded‐file part anywhere in user_content.parts
+    incoming = None
+    for part in callback_context._invocation_context.user_content.parts:
+        if getattr(part, "inline_data", None) is not None:
+            incoming = part.inline_data
+            break
+
+    # if the user gave a filename, stash it and override figure title
+    if incoming and getattr(incoming, "display_name", None):
+        callback_context.state["current_display_name"] = incoming.display_name
+        figure_desc_obj.title = incoming.display_name
     # compute figure number
-    figure_type = figure_desc_obj.figure_type or "main"
-    
-    bucket_key = SUPP_FIGURES_KEY if figure_type == "supplemental" else FIGURES_KEY
-    existing = state.get(bucket_key, {})
-    current_figure_id = len(existing) + 1
+    current_figure_id = 1
+    if FIGURES_KEY in state:
+        current_figure_id = len(state[FIGURES_KEY]) + 1
 
     figure_desc_obj.figure_number = current_figure_id
     modified_text = figure_desc_obj.model_dump_json()
@@ -78,34 +86,21 @@ def update_figure_state(
 
     current_figure = state[CURRENT_FIGURE_KEY]
     current_figure_obj = SingleFigureDescription.model_validate(current_figure)
+    # load or initialize the figures dict, then store it back on state
+    current_figure_state = state.get(FIGURES_KEY, {})
+    state[FIGURES_KEY] = current_figure_state
 
-    # Decide which dictionary (bucket) to store the figure in
-    bucket_key = (
-        SUPP_FIGURES_KEY
-        if current_figure_obj.figure_type == "supplemental"
-        else FIGURES_KEY
-    )
-
-    # Make sure the bucket exists
-    if bucket_key not in state:
-        state[bucket_key] = {}
-
-    # Write the figure data under its running number
-    bucket = state[bucket_key]
-    bucket[current_figure_obj.figure_number] = {
+    entry = {
         k: v
         for k, v in current_figure_obj.model_dump().items()
         if k != "figure_number"
     }
-    state[bucket_key] = bucket
+    # preserve any user‑provided filename exactly
+    display_label = state.get("current_display_name", None)
+    if display_label is not None:
+        entry["display_name"] = display_label
+    current_figure_state[current_figure_obj.figure_number] = entry
 
-    if current_figure_obj.figure_type == "supplemental":
-        caption = (
-            f"**Figure S{current_figure_obj.figure_number}. "
-            f"{current_figure_obj.title}**\n"
-            f"{current_figure_obj.description}\n\n"
-        )
-        state["supplementary_figures"] = state.get("supplementary_figures", "") + caption
     state[CURRENT_FIGURE_KEY] = ""
 
     return None
